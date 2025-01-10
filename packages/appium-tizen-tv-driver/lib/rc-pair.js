@@ -16,22 +16,32 @@ export async function pairRemote({host, port}) {
     throw err;
   }
 
+  // Possible port detection
+  const deviceData = await got.get(`http://${host}:8001/api/v2/`).json();
+  if (deviceData?.device?.TokenAuthSupport !== 'true' && port === 8002) {
+    port = 8001;
+  }
+
   const rc = new TizenRemote(host, {...RC_OPTS, port});
 
-  try {
-    const token = await rc.getToken({force: true});
-    if (token) {
-      console.log(token); // eslint-disable-line no-console
-      return;
+  if (await rc.isTokenSupportedDevice()) {
+    try {
+      const token = await rc.getToken({force: true});
+      if (token) {
+        console.log(token); // eslint-disable-line no-console
+        return;
+      }
+  
+      if (await rc.isTokenSupportedDevice()) {
+        throw new Error(`Could not retrieve token; please try allowing the remote again`);
+      }
+  
+      console.log('The device may not support token-based authentication. Allowing the pop-up notification is sufficient.'); // eslint-disable-line no-console
+    } finally {
+      await rc.disconnect();
     }
-
-    if (await rc.isTokenSupportedDevice()) {
-      throw new Error(`Could not retrieve token; please try allowing the remote again`);
-    }
-
+  } else {
     console.log('The device may not support token-based authentication. Allowing the pop-up notification is sufficient.'); // eslint-disable-line no-console
-  } finally {
-    await rc.disconnect();
   }
 }
 
