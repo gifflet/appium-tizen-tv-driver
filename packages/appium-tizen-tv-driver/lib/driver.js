@@ -343,7 +343,7 @@ class TizenTVDriver extends BaseDriver {
       // or we will be booted out of the app once the "approval" modal dialog closes.
       // while the token may not be passed thru caps, it may be in the
       // environment or in a cache.
-      if (caps.resetRcToken || !(await this.#remote.hasToken())) {
+      if ((caps.resetRcToken || !(await this.#remote.hasToken())) && (await this.#remote.isTokenSupportedDevice())) {
         log.info('Requesting new token; please wait...');
         await this.#remote.getToken({force: Boolean(caps.resetRcToken)});
       }

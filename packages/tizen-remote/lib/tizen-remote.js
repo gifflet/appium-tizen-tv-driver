@@ -881,7 +881,7 @@ export class TizenRemote extends createdTypedEmitterClass() {
     this.#onWs(WsEvent.MESSAGE, this.#debugListener, {context: this});
     this.#onWs(WsEvent.MESSAGE, this.#updateTokenListener, {context: this});
 
-    if (!this.#token && !noToken) {
+    if (!this.#token && !noToken && (await this.isTokenSupportedDevice())) {
       this.#debug('Requesting new token; waiting %d...', this.#tokenTimeout / 1000);
       this.#token = await this.getToken();
       this.#debug('Received token: %s', this.#token);
